@@ -9,9 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@hello-pangea/dnd": "^18.0.1",
     "@tailwindcss/typography": "^0.5.16",
     "@tiptap/extension-color": "^2.14.0",
     "@tiptap/extension-font-family": "^2.14.0",
+    "@tiptap/extension-highlight": "^2.14.0",
+    "@tiptap/extension-link": "^2.14.0",
+    "@tiptap/extension-subscript": "^2.14.0",
+    "@tiptap/extension-superscript": "^2.14.0",
     "@tiptap/extension-table": "^2.14.0",
     "@tiptap/extension-table-cell": "^2.14.0",
     "@tiptap/extension-table-header": "^2.14.0",
@@ -23,11 +28,15 @@
     "@tiptap/extension-underline": "^2.14.0",
     "@tiptap/react": "^2.14.0",
     "@tiptap/starter-kit": "^2.14.0",
+    "@types/uuid": "^10.0.0",
+    "geist": "^1.4.2",
     "lucide-react": "^0.513.0",
     "next": "^15.3.3",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-hot-toast": "^2.5.2"
+    "react": "^18.2.0",
+    "react-beautiful-dnd": "^13.1.1",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.5.2",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

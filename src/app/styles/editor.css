@@ -1,0 +1,244 @@
+.ProseMirror {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  min-height: 120px;
+  outline: none;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.ProseMirror > * + * {
+  margin-top: 0.75em;
+}
+
+.ProseMirror p {
+  margin: 0.5em 0;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.ProseMirror ul li,
+.ProseMirror ol li {
+  margin: 0.25em 0;
+  padding-left: 0.25rem;
+}
+
+.ProseMirror ul li::marker,
+.ProseMirror ol li::marker {
+  color: inherit;
+}
+
+.ProseMirror ul ul {
+  list-style-type: circle;
+}
+
+.ProseMirror ul ul ul {
+  list-style-type: square;
+}
+
+.ProseMirror h1 {
+  font-size: 2em;
+  font-weight: bold;
+  margin: 1em 0 0.5em;
+  line-height: 1.2;
+}
+
+.ProseMirror h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 1em 0 0.5em;
+  line-height: 1.3;
+}
+
+.ProseMirror h3 {
+  font-size: 1.25em;
+  font-weight: bold;
+  margin: 1em 0 0.5em;
+  line-height: 1.4;
+}
+
+.ProseMirror strong {
+  font-weight: bold;
+}
+
+.ProseMirror em {
+  font-style: italic;
+}
+
+.ProseMirror u {
+  text-decoration: underline;
+}
+
+.ProseMirror s {
+  text-decoration: line-through;
+}
+
+.ProseMirror sub {
+  vertical-align: sub;
+  font-size: smaller;
+}
+
+.ProseMirror sup {
+  vertical-align: super;
+  font-size: smaller;
+}
+
+.ProseMirror a {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ProseMirror a:hover {
+  color: #1d4ed8;
+}
+
+.ProseMirror code {
+  background-color: rgba(97, 97, 97, 0.1);
+  color: #616161;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25em;
+  font-family: 'Courier New', monospace;
+}
+
+.ProseMirror pre {
+  background: #0D0D0D;
+  color: #FFF;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin: 0.5rem 0;
+  overflow-x: auto;
+}
+
+.ProseMirror pre code {
+  color: inherit;
+  padding: 0;
+  background: none;
+  font-size: 0.8rem;
+}
+
+.ProseMirror blockquote {
+  padding-left: 1rem;
+  border-left: 3px solid rgba(13, 13, 13, 0.2);
+  margin: 0.5rem 0;
+  font-style: italic;
+}
+
+.ProseMirror mark {
+  background-color: #fef08a;
+  padding: 0.1em 0.2em;
+  border-radius: 0.2em;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Text alignment */
+.ProseMirror .has-text-align-left {
+  text-align: left;
+}
+
+.ProseMirror .has-text-align-center {
+  text-align: center;
+}
+
+.ProseMirror .has-text-align-right {
+  text-align: right;
+}
+
+.ProseMirror .has-text-align-justify {
+  text-align: justify;
+}
+
+/* Dark mode styles */
+.dark .ProseMirror {
+  background: rgba(55, 65, 81, 0.5);
+  color: #fff;
+}
+
+.dark .ProseMirror code {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+}
+
+.dark .ProseMirror blockquote {
+  border-left-color: rgba(255, 255, 255, 0.3);
+}
+
+.dark .ProseMirror p.is-editor-empty:first-child::before {
+  color: #9ca3af;
+}
+
+.dark .ProseMirror a {
+  color: #60a5fa;
+}
+
+.dark .ProseMirror a:hover {
+  color: #93c5fd;
+}
+
+.dark .ProseMirror mark {
+  background-color: #fbbf24;
+  color: #1f2937;
+}
+
+/* Light theme specific colors */
+.ProseMirror {
+  color: #1f2937;
+}
+
+/* Ensure proper contrast in note cards */
+.prose-invert .ProseMirror {
+  color: #ffffff !important;
+}
+
+.prose-invert .ProseMirror ul li::marker,
+.prose-invert .ProseMirror ol li::marker {
+  color: #ffffff;
+}
+
+.prose-invert .ProseMirror a {
+  color: #93c5fd;
+}
+
+.prose-invert .ProseMirror code {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #e5e7eb;
+}
+
+/* Focus styles */
+.ProseMirror:focus {
+  outline: none;
+}
+
+/* Selection styles */
+.ProseMirror::selection {
+  background: #b3d4fc;
+}
+
+.ProseMirror ::-moz-selection {
+  background: #b3d4fc;
+}
+
+.dark .ProseMirror::selection {
+  background: rgba(59, 130, 246, 0.5);
+}
+
+.dark .ProseMirror ::-moz-selection {
+  background: rgba(59, 130, 246, 0.5);
+} 
