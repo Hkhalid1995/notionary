@@ -241,4 +241,114 @@
 
 .dark .ProseMirror ::-moz-selection {
   background: rgba(59, 130, 246, 0.5);
+}
+
+/* TipTap Editor Styles */
+.tiptap-editor {
+  outline: none;
+  border: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.tiptap-editor p {
+  margin: 0.5em 0;
+  line-height: 1.4;
+}
+
+.tiptap-editor p:first-child {
+  margin-top: 0;
+}
+
+.tiptap-editor p:last-child {
+  margin-bottom: 0;
+}
+
+.tiptap-editor h1 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0.8em 0 0.4em 0;
+  line-height: 1.2;
+}
+
+.tiptap-editor h2 {
+  font-size: 1.3em;
+  font-weight: bold;
+  margin: 0.6em 0 0.3em 0;
+  line-height: 1.2;
+}
+
+.tiptap-editor h3 {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin: 0.5em 0 0.25em 0;
+  line-height: 1.2;
+}
+
+.tiptap-editor ul,
+.tiptap-editor ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.tiptap-editor li {
+  margin: 0.25em 0;
+}
+
+.tiptap-editor strong {
+  font-weight: bold;
+}
+
+.tiptap-editor em {
+  font-style: italic;
+}
+
+.tiptap-editor u {
+  text-decoration: underline;
+}
+
+.tiptap-editor code {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 0.1em 0.3em;
+  border-radius: 0.2em;
+  font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.tiptap-editor pre {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 1em;
+  border-radius: 0.5em;
+  font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+
+.tiptap-editor blockquote {
+  border-left: 3px solid #ccc;
+  padding-left: 1em;
+  margin: 0.5em 0;
+  font-style: italic;
+}
+
+.tiptap-editor a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.tiptap-editor a:hover {
+  color: #1d4ed8;
+}
+
+/* Dark theme adjustments */
+.dark .tiptap-editor code {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .tiptap-editor pre {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .tiptap-editor blockquote {
+  border-left-color: #666;
 } 

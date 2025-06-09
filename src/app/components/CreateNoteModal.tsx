@@ -14,6 +14,7 @@ import Superscript from '@tiptap/extension-superscript';
 import Highlight from '@tiptap/extension-highlight';
 import { Note, TodoItem } from './ClientPage';
 import { v4 as uuidv4 } from 'uuid';
+import NotionaryLogo from './NotionaryLogo';
 
 interface CreateNoteModalProps {
   isDark: boolean;
@@ -51,27 +52,33 @@ export default function CreateNoteModal({ isDark, onClose, onCreate }: CreateNot
         multicolor: true,
       }),
     ],
-    content: content,
+    content: '',
     onUpdate: ({ editor }) => {
       setContent(editor.getHTML());
     },
     editorProps: {
       attributes: {
-        class: `prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[120px] p-4 max-w-none ${
-          isDark ? 'prose-invert text-white' : 'text-gray-900'
+        class: `focus:outline-none min-h-[120px] p-4 tiptap-editor ${
+          isDark ? 'text-white' : 'text-gray-900'
         }`,
         style: `color: ${isDark ? '#ffffff' : '#1f2937'}; background-color: ${isDark ? '#374151' : '#ffffff'};`,
+      },
+      handleKeyDown: (view, event) => {
+        // Prevent any event interference with spacebar
+        return false;
       },
     },
     editable: true,
     immediatelyRender: false,
+    enableInputRules: true,
+    enablePasteRules: true,
   });
 
   useEffect(() => {
-    if (editor && !editor.isDestroyed) {
+    if (editor && !editor.isDestroyed && content && editor.getHTML() !== content) {
       editor.commands.setContent(content);
     }
-  }, [editor, content]);
+  }, [editor]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,7 +186,10 @@ export default function CreateNoteModal({ isDark, onClose, onCreate }: CreateNot
           ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'}
         `}>
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold">Create New Note</h2>
+            <div className="flex items-center space-x-3">
+              <NotionaryLogo size="sm" showText={false} />
+              <h2 className="text-2xl font-bold">Create New Note</h2>
+            </div>
             <button
               onClick={onClose}
               className={`

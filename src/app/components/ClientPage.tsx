@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { v4 as uuidv4 } from 'uuid';
 import NoteCard from './NoteCard';
 import NoteGroup from './NoteGroup';
 import CreateNoteModal from './CreateNoteModal';
 import EditNoteModal from './EditNoteModal';
+import NotionaryLogo from './NotionaryLogo';
 
 export interface TodoItem {
   id: string;
@@ -48,6 +50,9 @@ export interface Workspace {
 }
 
 export default function ClientPage() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState('');
   const [isDark, setIsDark] = useState(false);
   const [notes, setNotes] = useState<Note[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -58,8 +63,38 @@ export default function ClientPage() {
   const [draggedNoteId, setDraggedNoteId] = useState<string | null>(null);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 
-  // Load data from localStorage on mount
+  // Authentication check and load data from localStorage on mount
   useEffect(() => {
+    const isAuthenticated = localStorage.getItem('isAuthenticated');
+    const savedUserEmail = localStorage.getItem('userEmail');
+    const keepSignedIn = localStorage.getItem('keepSignedIn');
+    const authExpiration = localStorage.getItem('authExpiration');
+    
+    // Check if authentication has expired
+    if (keepSignedIn === 'true' && authExpiration) {
+      const expirationDate = new Date(authExpiration);
+      const now = new Date();
+      
+      if (now > expirationDate) {
+        // Authentication expired, clear all auth data
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('keepSignedIn');
+        localStorage.removeItem('authExpiration');
+        localStorage.removeItem('authProvider');
+        router.push('/auth/signin');
+        return;
+      }
+    }
+    
+    if (isAuthenticated !== 'true') {
+      router.push('/auth/signin');
+      return;
+    }
+    
+    setUserEmail(savedUserEmail || '');
+    
     const savedTheme = localStorage.getItem('theme');
     const savedNotes = localStorage.getItem('notes');
     const savedGroups = localStorage.getItem('groups');
@@ -100,7 +135,9 @@ export default function ClientPage() {
       setWorkspaces([defaultWorkspace]);
       setCurrentWorkspaceId(defaultWorkspace.id);
     }
-  }, []);
+    
+    setIsLoading(false);
+  }, [router]);
 
   // Save to localStorage whenever data changes
   useEffect(() => {
@@ -222,6 +259,16 @@ export default function ClientPage() {
     setGroups(prev => prev.filter(group => group.id !== groupId));
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('keepSignedIn');
+    localStorage.removeItem('authExpiration');
+    localStorage.removeItem('authProvider');
+    router.push('/');
+  };
+
   const onDragStart = (start: any) => {
     setDraggedNoteId(start.draggableId);
   };
@@ -334,6 +381,17 @@ export default function ClientPage() {
 
   const workspaceItems = getAllWorkspaceItems();
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading your workspace...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`min-h-screen transition-colors duration-200 ${
       isDark ? 'bg-gray-900' : 'bg-gray-50'
@@ -345,11 +403,7 @@ export default function ClientPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              <h1 className={`text-2xl font-bold ${
-                isDark ? 'text-white' : 'text-gray-900'
-              }`}>
-                📝 Notionary
-              </h1>
+              <NotionaryLogo size="md" showText={true} />
               
               {/* Workspace Selector */}
               <div className="flex items-center space-x-2">
@@ -415,6 +469,24 @@ export default function ClientPage() {
               >
                 {isDark ? '☀️' : '🌙'}
               </button>
+
+              {/* User Menu */}
+              <div className="flex items-center space-x-3">
+                <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  {userEmail}
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                    isDark 
+                      ? 'text-gray-300 hover:text-white hover:bg-gray-700' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
+                  }`}
+                  title="Sign out"
+                >
+                  Sign Out
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -632,11 +704,14 @@ function WorkspaceModal({
           isDark ? 'border-gray-700' : 'border-gray-200'
         }`}>
           <div className="flex justify-between items-center">
-            <h2 className={`text-xl font-semibold ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>
-              🗂️ Manage Workspaces
-            </h2>
+            <div className="flex items-center space-x-3">
+              <NotionaryLogo size="sm" showText={false} />
+              <h2 className={`text-xl font-semibold ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>
+                🗂️ Manage Workspaces
+              </h2>
+            </div>
             <button
               onClick={onClose}
               className={`text-2xl ${

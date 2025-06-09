@@ -14,6 +14,7 @@ import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import { v4 as uuidv4 } from 'uuid';
 import { Note, TodoItem } from './ClientPage';
+import NotionaryLogo from './NotionaryLogo';
 
 interface EditNoteModalProps {
   note: Note;
@@ -53,6 +54,17 @@ export default function EditNoteModal({ note, isDark, onClose, onUpdate }: EditN
     ],
     content: note.content || '',
     immediatelyRender: false,
+    editorProps: {
+      attributes: {
+        class: 'focus:outline-none p-4 tiptap-editor',
+      },
+      handleKeyDown: (view, event) => {
+        // Prevent any event interference with spacebar
+        return false;
+      },
+    },
+    enableInputRules: true,
+    enablePasteRules: true,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -147,7 +159,10 @@ export default function EditNoteModal({ note, isDark, onClose, onUpdate }: EditN
         {/* Header */}
         <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
           <div className="flex justify-between items-center">
-            <h2 className="text-3xl font-bold">✏️ Edit Note</h2>
+            <div className="flex items-center space-x-3">
+              <NotionaryLogo size="sm" showText={false} />
+              <h2 className="text-3xl font-bold">✏️ Edit Note</h2>
+            </div>
             <button 
               onClick={onClose}
               className={`text-2xl p-2 rounded-full transition-colors ${

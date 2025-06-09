@@ -75,27 +75,34 @@ export default function NoteCard({ note, isDark, isDragging, onUpdate, onDelete,
         multicolor: true,
       }),
     ],
-    content: editContent,
+    content: '',
     onUpdate: ({ editor }) => {
       setEditContent(editor.getHTML());
     },
     editorProps: {
       attributes: {
-        class: `prose prose-sm focus:outline-none min-h-[80px] p-3 max-w-none ${
-          isColorDark(note.color || '#FFFFFF') ? 'prose-invert text-white' : 'text-gray-900'
+        class: `focus:outline-none min-h-[80px] p-3 tiptap-editor ${
+          isColorDark(note.color || '#FFFFFF') ? 'text-white' : 'text-gray-900'
         }`,
         style: `color: ${textColor}; background-color: ${isColorDark(note.color || '#FFFFFF') ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)'};`,
+      },
+      handleKeyDown: (view, event) => {
+        // Prevent any event interference with spacebar
+        return false;
       },
     },
     editable: true,
     immediatelyRender: false,
+    enableInputRules: true,
+    enablePasteRules: true,
   });
 
   useEffect(() => {
-    if (editor && !editor.isDestroyed) {
-      editor.commands.setContent(editContent);
+    if (editor && !editor.isDestroyed && note.content && editor.getHTML() !== note.content) {
+      editor.commands.setContent(note.content);
+      setEditContent(note.content);
     }
-  }, [editor, editContent]);
+  }, [editor, note.content]);
 
   const handleSave = () => {
     onUpdate(note.id, {

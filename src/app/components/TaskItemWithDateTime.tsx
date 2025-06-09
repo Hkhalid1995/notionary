@@ -32,20 +32,23 @@ export default function TaskItemWithDateTime({
 
   const editor = useEditor({
     extensions: [StarterKit],
-    content: editText,
+    content: '',
     onUpdate: ({ editor }) => {
       setEditText(editor.getHTML());
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none',
+        class: 'focus:outline-none p-2 tiptap-editor',
+      },
+      handleKeyDown: (view, event) => {
+        // Prevent any event interference with spacebar
+        return false;
       },
     },
     editable: true,
-    injectCSS: true,
-    parseOptions: {
-      preserveWhitespace: 'full',
-    },
+    immediatelyRender: false,
+    enableInputRules: true,
+    enablePasteRules: true,
   });
 
   useEffect(() => {
@@ -53,10 +56,10 @@ export default function TaskItemWithDateTime({
   }, []);
 
   useEffect(() => {
-    if (editor && !editor.isDestroyed) {
+    if (editor && !editor.isDestroyed && editText !== editor.getHTML()) {
       editor.commands.setContent(editText);
     }
-  }, [editor, editText]);
+  }, [editor]);
 
   const handleSubmit = () => {
     if (editText.trim()) {
