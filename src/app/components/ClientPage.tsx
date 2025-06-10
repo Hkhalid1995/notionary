@@ -398,7 +398,7 @@ export default function ClientPage() {
     }`}>
       {/* Header */}
       <header className={`sticky top-0 z-10 border-b transition-colors duration-200 ${
-        isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        isDark ? 'bg-[#1E1B4B] border-[#A5B4FC]/20' : 'bg-white border-gray-200'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -409,7 +409,7 @@ export default function ClientPage() {
               <div className="flex items-center space-x-2">
                 <div className={`flex items-center space-x-2 px-3 py-1 rounded-lg border ${
                   isDark 
-                    ? 'border-gray-600 bg-gray-700' 
+                    ? 'border-[#A5B4FC]/30 bg-[#3730A3]/20' 
                     : 'border-gray-300 bg-gray-100'
                 }`}>
                   <div
@@ -420,7 +420,7 @@ export default function ClientPage() {
                     value={currentWorkspaceId}
                     onChange={(e) => setCurrentWorkspaceId(e.target.value)}
                     className={`bg-transparent border-none outline-none text-sm font-medium ${
-                      isDark ? 'text-white' : 'text-gray-900'
+                      isDark ? 'text-[#E5E7EB]' : 'text-[#1F2937]'
                     }`}
                   >
                     {workspaces.map(workspace => (
@@ -435,7 +435,7 @@ export default function ClientPage() {
                   onClick={() => setShowWorkspaceModal(true)}
                   className={`px-2 py-1 rounded text-sm transition-colors ${
                     isDark 
-                      ? 'text-gray-400 hover:text-white hover:bg-gray-700' 
+                      ? 'text-[#A5B4FC] hover:text-[#E5E7EB] hover:bg-[#3730A3]/30' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
                   }`}
                   title="Manage workspaces"
@@ -445,7 +445,7 @@ export default function ClientPage() {
               </div>
 
               <span className={`text-sm ${
-                isDark ? 'text-gray-400' : 'text-gray-600'
+                isDark ? 'text-[#A5B4FC]' : 'text-gray-600'
               }`}>
                 {workspaceNotes.length} notes • {workspaceGroups.length} groups
               </span>
@@ -463,7 +463,7 @@ export default function ClientPage() {
                 onClick={() => setIsDark(!isDark)}
                 className={`p-2 rounded-lg transition-colors ${
                   isDark 
-                    ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600' 
+                    ? 'bg-[#3730A3]/30 text-[#FBBF24] hover:bg-[#3730A3]/50' 
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -472,14 +472,14 @@ export default function ClientPage() {
 
               {/* User Menu */}
               <div className="flex items-center space-x-3">
-                <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                <div className={`text-sm ${isDark ? 'text-[#E5E7EB]' : 'text-[#1F2937]'}`}>
                   {userEmail}
                 </div>
                 <button
                   onClick={handleLogout}
                   className={`px-3 py-2 text-sm rounded-lg transition-colors ${
                     isDark 
-                      ? 'text-gray-300 hover:text-white hover:bg-gray-700' 
+                      ? 'text-[#E5E7EB] hover:text-white hover:bg-[#3730A3]/30' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
                   }`}
                   title="Sign out"
