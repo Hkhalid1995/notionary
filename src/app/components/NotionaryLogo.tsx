@@ -54,7 +54,7 @@ export default function NotionaryLogo({ size = 'md', showText = true, className 
             className="drop-shadow-md"
           />
           
-          {/* Lighter indigo folded corner */}
+          {/* Indigo accent folded corner */}
           <path
             d="M 60 15 L 75 15 L 75 30 L 60 15 Z"
             fill="#6366F1"

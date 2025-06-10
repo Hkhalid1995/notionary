@@ -60,18 +60,18 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#EEF2FF] to-[#F3F4F6] dark:from-[#1E1B4B] dark:to-gray-900 flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
+          <h2 className="mt-6 text-3xl font-bold text-[#1F2937] dark:text-[#E5E7EB]">
             Welcome back
           </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-sm text-[#1F2937]/70 dark:text-[#E5E7EB]/70">
             Sign in to your notes account
           </p>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 py-8 px-6 shadow-xl rounded-lg">
+        <div className="bg-white dark:bg-[#1E1B4B] py-8 px-6 shadow-xl rounded-lg border border-[#A5B4FC]/20">
           {/* Social Authentication */}
           <div className="space-y-3 mb-6">
             <button
@@ -188,7 +188,7 @@ export default function SignIn() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-[#4F46E5] to-[#FBBF24] hover:from-[#3730A3] hover:to-[#F59E0B] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4F46E5] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
               >
                 {isLoading ? 'Signing in...' : 'Sign in'}
               </button>

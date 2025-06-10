@@ -383,9 +383,9 @@ export default function ClientPage() {
 
   if (isLoading) {
     return (
-              <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+              <div className="min-h-screen bg-[#F3F4F6] dark:bg-[#1E1B4B] flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#4F46E5] mx-auto"></div>
             <p className="mt-4 text-gray-600 dark:text-gray-400">Loading your workspace...</p>
           </div>
         </div>
@@ -394,7 +394,7 @@ export default function ClientPage() {
 
   return (
     <div className={`min-h-screen transition-colors duration-200 ${
-      isDark ? 'bg-gray-900' : 'bg-gray-50'
+      isDark ? 'bg-[#1E1B4B]' : 'bg-[#F3F4F6]'
     }`}>
       {/* Header */}
       <header className={`sticky top-0 z-10 border-b transition-colors duration-200 ${
@@ -454,7 +454,7 @@ export default function ClientPage() {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                className="px-4 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7DD3FC] text-white rounded-lg hover:from-[#3730A3] hover:to-[#0EA5E9] transition-all duration-200 font-medium shadow-lg"
               >
                 ➕ Add Note
               </button>
@@ -519,8 +519,8 @@ export default function ClientPage() {
                 className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4 rounded-xl transition-all duration-200 min-h-[400px] ${
                   snapshot.isDraggingOver 
                     ? isDark 
-                      ? 'bg-gray-800 ring-2 ring-indigo-400' 
-                      : 'bg-indigo-50 ring-2 ring-indigo-400'
+                      ? 'bg-[#3730A3]/20 ring-2 ring-[#A5B4FC]' 
+                      : 'bg-[#EEF2FF] ring-2 ring-[#4F46E5]'
                     : ''
                 }`}
               >
