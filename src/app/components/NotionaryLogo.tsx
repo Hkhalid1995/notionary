@@ -79,7 +79,7 @@ export default function NotionaryLogo({ size = 'md', showText = true, className 
 
       {/* Logo Text */}
       {showText && (
-        <span className={`font-bold ${config.textSize} text-gray-900 dark:text-white tracking-tight`}>
+        <span className={`font-bold ${config.textSize} text-[#1F2937] dark:text-[#E5E7EB] tracking-tight`}>
           Notionary
         </span>
       )}
