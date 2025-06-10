@@ -50,14 +50,14 @@ export default function NotionaryLogo({ size = 'md', showText = true, className 
             height="75"
             rx="12"
             ry="12"
-            fill="#10B981"
+            fill="#4F46E5"
             className="drop-shadow-md"
           />
           
-          {/* Blue folded corner */}
+          {/* Lighter indigo folded corner */}
           <path
             d="M 60 15 L 75 15 L 75 30 L 60 15 Z"
-            fill="#1E40AF"
+            fill="#6366F1"
           />
           
           {/* White checkmark */}

@@ -383,12 +383,12 @@ export default function ClientPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading your workspace...</p>
+              <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading your workspace...</p>
+          </div>
         </div>
-      </div>
     );
   }
 
@@ -454,7 +454,7 @@ export default function ClientPage() {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
               >
                 ➕ Add Note
               </button>
@@ -519,8 +519,8 @@ export default function ClientPage() {
                 className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4 rounded-xl transition-all duration-200 min-h-[400px] ${
                   snapshot.isDraggingOver 
                     ? isDark 
-                      ? 'bg-gray-800 ring-2 ring-blue-400' 
-                      : 'bg-blue-50 ring-2 ring-blue-400'
+                      ? 'bg-gray-800 ring-2 ring-indigo-400' 
+                      : 'bg-indigo-50 ring-2 ring-indigo-400'
                     : ''
                 }`}
               >
