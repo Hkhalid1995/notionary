@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import NotionaryLogo from '../../components/NotionaryLogo';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -63,6 +64,9 @@ export default function SignIn() {
     <div className="min-h-screen bg-gradient-to-br from-[#EEF2FF] to-[#F3F4F6] dark:from-[#1E1B4B] dark:to-gray-900 flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
+          <div className="flex justify-center mb-8">
+            <NotionaryLogo size="2xl" showText={true} />
+          </div>
           <h2 className="mt-6 text-3xl font-bold text-[#1F2937] dark:text-[#E5E7EB]">
             Welcome back
           </h2>
