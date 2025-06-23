@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import TextStyle from '@tiptap/extension-text-style';
@@ -26,7 +26,7 @@ interface NoteCardProps {
   isInGroup?: boolean;
 }
 
-export default function NoteCard({ note, isDark, isDragging, onUpdate, onDelete, isInGroup = false }: NoteCardProps) {
+function NoteCard({ note, isDark, isDragging, onUpdate, onDelete, isInGroup = false }: NoteCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editTitle, setEditTitle] = useState(note.title);
@@ -735,4 +735,6 @@ export default function NoteCard({ note, isDark, isDragging, onUpdate, onDelete,
     )}
     </>
   );
-} 
+}
+
+export default memo(NoteCard); 

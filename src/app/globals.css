@@ -3,6 +3,29 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --gradient-from: #ffffff;
+  --gradient-to: #f8fafc;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --gradient-from: #1e293b;
+  --gradient-to: #0f172a;
+  --card-bg: #1e293b;
+  --card-border: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
 }
 
 @theme inline {
@@ -12,15 +35,252 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Base styles */
 body {
+  font-family: Arial, Helvetica, sans-serif;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Light mode - Clean white theme */
+html:not(.dark) body {
+  background: linear-gradient(to bottom right, var(--gradient-from), var(--gradient-to)) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Dark mode - Rich dark theme */
+html.dark body {
+  background: linear-gradient(to bottom right, var(--gradient-from), var(--gradient-to)) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Navigation bar styles */
+header {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--card-border);
+}
+
+html.dark header {
+  background: rgba(30, 41, 59, 0.9) !important;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--card-border);
+}
+
+/* Text colors for navigation */
+header .text-gray-800 {
+  color: var(--text-primary) !important;
+}
+
+header .text-gray-600 {
+  color: var(--text-secondary) !important;
+}
+
+header .text-gray-500 {
+  color: var(--text-muted) !important;
+}
+
+header .text-gray-400 {
+  color: var(--text-muted) !important;
+}
+
+/* Hover states */
+header .hover\:bg-gray-200\/50:hover {
+  background-color: rgba(226, 232, 240, 0.5) !important;
+}
+
+html.dark header .hover\:bg-gray-700\/50:hover {
+  background-color: rgba(51, 65, 85, 0.5) !important;
+}
+
+/* Main content area */
+.min-h-screen {
+  background: linear-gradient(to bottom right, var(--gradient-from), var(--gradient-to)) !important;
+}
+
+/* Card backgrounds */
+.bg-white {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+}
+
+/* Text colors throughout the app */
+.text-gray-900 {
+  color: var(--text-primary) !important;
+}
+
+.text-gray-700 {
+  color: var(--text-secondary) !important;
+}
+
+.text-gray-600 {
+  color: var(--text-secondary) !important;
+}
+
+.text-gray-500 {
+  color: var(--text-muted) !important;
+}
+
+.text-gray-400 {
+  color: var(--text-muted) !important;
+}
+
+/* Border colors */
+.border-gray-200 {
+  border-color: var(--card-border) !important;
+}
+
+.border-gray-300 {
+  border-color: var(--card-border) !important;
+}
+
+.border-gray-600 {
+  border-color: var(--card-border) !important;
+}
+
+.border-gray-700 {
+  border-color: var(--card-border) !important;
+}
+
+/* Dropdown and modal backgrounds */
+.bg-white.dark\:bg-\[#1E1B4B\] {
+  background-color: var(--card-bg) !important;
+}
+
+/* Workspace dropdown specific styles */
+.workspace-dropdown {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.dark .workspace-dropdown {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Button styles */
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover)) !important;
+  color: white !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* Input styles */
+input, textarea, select {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  color: var(--text-primary) !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+/* Glassmorphism effects */
+.glass {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+html.dark .glass {
+  background: rgba(30, 41, 59, 0.1) !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+}
+
+/* Workspace selector button */
+.workspace-selector-btn {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  color: var(--text-primary) !important;
+  transition: all 0.2s ease !important;
+}
+
+.workspace-selector-btn:hover {
+  background: rgba(59, 130, 246, 0.05) !important;
+  border-color: var(--accent) !important;
+}
+
+html.dark .workspace-selector-btn:hover {
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Force workspace selector text to be visible in light mode */
+.workspace-selector-btn .text-gray-800 {
+  color: #000000 !important;
+}
+
+.workspace-selector-btn .text-gray-200 {
+  color: #000000 !important;
+}
+
+/* Ensure all text in workspace selector is visible */
+.workspace-selector-btn * {
+  color: #000000 !important;
+}
+
+/* Dark mode overrides */
+html.dark .workspace-selector-btn * {
+  color: #ffffff !important;
+}
+
+html.dark .workspace-selector-btn .text-gray-800 {
+  color: #ffffff !important;
+}
+
+html.dark .workspace-selector-btn .text-gray-200 {
+  color: #ffffff !important;
+}
+
+/* Create workspace button */
+.create-workspace-btn {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  color: white !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.create-workspace-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Workspace list items */
+.workspace-item {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  color: var(--text-primary) !important;
+  transition: all 0.2s ease !important;
+}
+
+.workspace-item:hover {
+  background: rgba(59, 130, 246, 0.05) !important;
+  border-color: var(--accent) !important;
+}
+
+.workspace-item.active {
+  background: rgba(59, 130, 246, 0.1) !important;
+  border-color: var(--accent) !important;
+}
+
+html.dark .workspace-item:hover {
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+html.dark .workspace-item.active {
+  background: rgba(59, 130, 246, 0.15) !important;
 }

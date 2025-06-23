@@ -85,21 +85,21 @@ export default function TaskItemWithDateTime({
   return (
     <div className={`p-6 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-lg border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
       <div className="flex items-start gap-4">
-        <input
-          type="checkbox"
-          checked={note.completed}
-          onChange={(e) => onUpdate({ completed: e.target.checked })}
+              <input
+                type="checkbox"
+                checked={note.completed}
+                onChange={(e) => onUpdate({ completed: e.target.checked })}
           className="mt-1 h-4 w-4 rounded border-gray-300"
-        />
+              />
         
         <div className="flex-1">
-          {isEditing ? (
+              {isEditing ? (
             <div className="mb-4">
               <div className={`bg-white rounded-lg p-4 ${isDark ? 'text-black' : ''}`}>
                 {isMounted && editor && (
                   <EditorContent editor={editor} />
                 )}
-              </div>
+                </div>
               <div className="flex justify-end mt-2">
                 <button
                   onClick={handleSubmit}
@@ -129,24 +129,24 @@ export default function TaskItemWithDateTime({
               }`}
             />
             
-            <textarea
-              value={comments}
-              onChange={handleCommentsChange}
-              placeholder="Add comments..."
+              <textarea
+                value={comments}
+                onChange={handleCommentsChange}
+                placeholder="Add comments..."
               className={`w-full px-2 py-1 rounded border ${
                 isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
               } resize-y min-h-[2.5rem]`}
               rows={2}
-            />
+              />
           </div>
         </div>
         
-        <button
-          onClick={onDelete}
-          className="text-red-500 hover:text-red-600 p-1"
-        >
-          ✕
-        </button>
+              <button
+                onClick={onDelete}
+                className="text-red-500 hover:text-red-600 p-1"
+              >
+                ✕
+              </button>
       </div>
     </div>
   );

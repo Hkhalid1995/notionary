@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 import { Note, Group } from './ClientPage';
 import NoteCard from './NoteCard';
@@ -19,7 +19,7 @@ interface NoteGroupProps {
   isWorkspaceView?: boolean;
 }
 
-export default function NoteGroup({
+function NoteGroup({
   group,
   notes,
   isDark,
@@ -94,35 +94,36 @@ export default function NoteGroup({
           className={`relative cursor-pointer transition-all duration-200 hover:scale-105`}
           onClick={toggleExpanded}
         >
-          {/* Folder Background - Fixed styling */}
+          {/* Folder Background - More refined styling */}
           <div 
-            className={`w-full h-48 rounded-2xl shadow-lg border-2 transition-all duration-200 ${
+            className={`w-full h-52 rounded-3xl shadow-xl border-2 transition-all duration-300 ${
               isDark 
-                ? 'bg-gray-800 border-gray-600 hover:border-gray-500' 
-                : 'bg-white border-gray-300 hover:border-gray-400'
+                ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-gray-600 hover:border-gray-500 hover:shadow-2xl' 
+                : 'bg-gradient-to-br from-white to-gray-50 border-gray-300 hover:border-gray-400 hover:shadow-2xl'
             }`}
           >
-            {/* Header with color accent - Fixed */}
+            {/* Header with refined color accent */}
             <div 
-              className={`p-3 border-b rounded-t-2xl ${
-                isDark ? 'border-gray-600' : 'border-gray-300'
+              className={`p-4 border-b rounded-t-3xl ${
+                isDark ? 'border-gray-600' : 'border-gray-200'
               }`}
               style={{ 
-                background: `linear-gradient(135deg, ${group.color}15, ${group.color}05)`,
-                borderLeft: `4px solid ${group.color}`
+                background: `linear-gradient(135deg, ${group.color}20, ${group.color}10)`,
+                borderLeft: `6px solid ${group.color}`
               }}
             >
               <div className="flex items-center justify-between">
-                <h3 className={`font-semibold text-sm truncate ${
+                <h3 className={`font-bold text-base truncate ${
                   isDark ? 'text-white' : 'text-gray-900'
                 }`}>
                   📁 {group.name}
                 </h3>
                 <span 
-                  className={`text-xs px-2 py-1 rounded-full font-medium`}
+                  className={`text-sm px-3 py-1 rounded-full font-semibold shadow-sm`}
                   style={{ 
-                    backgroundColor: group.color + '20',
-                    color: isDark ? '#fff' : '#000'
+                    backgroundColor: group.color + '30',
+                    color: isDark ? '#fff' : '#000',
+                    border: `2px solid ${group.color}40`
                   }}
                 >
                   {notes.length}
@@ -130,15 +131,17 @@ export default function NoteGroup({
               </div>
             </div>
 
-            {/* Preview Grid - Improved */}
-            <div className="p-3">
+            {/* Preview Grid - Enhanced with better drag and drop */}
+            <div className="p-4">
               <Droppable droppableId={`group-${group.id}`}>
                 {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`grid grid-cols-3 gap-2 h-24 ${
-                      snapshot.isDraggingOver ? 'bg-blue-100 dark:bg-blue-900 rounded-lg p-1' : ''
+                    className={`grid grid-cols-3 gap-3 h-28 transition-all duration-300 ${
+                      snapshot.isDraggingOver 
+                        ? 'bg-blue-100 dark:bg-blue-900/40 rounded-2xl p-2 border-2 border-blue-400 shadow-lg' 
+                        : ''
                     }`}
                   >
                     {getPreviewNotes().map((note, index) => (
@@ -148,17 +151,17 @@ export default function NoteGroup({
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`rounded-lg border text-xs p-1 overflow-hidden transition-all duration-200 ${
+                            className={`rounded-xl border-2 text-xs p-2 overflow-hidden transition-all duration-300 ${
                               isDark 
-                                ? 'bg-gray-700 border-gray-600' 
-                                : 'bg-gray-50 border-gray-200'
+                                ? 'bg-gray-700 border-gray-600 hover:bg-gray-600' 
+                                : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                             } ${
                               snapshot.isDragging 
-                                ? 'transform rotate-2 scale-110 z-50 shadow-2xl' 
+                                ? 'transform rotate-3 scale-110 z-50 shadow-2xl' 
                                 : 'hover:scale-105 cursor-grab active:cursor-grabbing'
                             }`}
                             style={{ 
-                              borderLeft: `3px solid ${note.color}`,
+                              borderLeft: `4px solid ${note.color}`,
                               ...provided.draggableProps.style
                             }}
                             onClick={(e) => {
@@ -169,10 +172,10 @@ export default function NoteGroup({
                             }}
                             onMouseDown={(e) => e.stopPropagation()}
                           >
-                            <div className={`font-medium truncate ${
+                            <div className={`font-semibold truncate ${
                               isDark ? 'text-white' : 'text-gray-900'
                             }`}>
-                              {note.title.slice(0, 8)}
+                              {note.title.slice(0, 10)}
                             </div>
                           </div>
                         )}
@@ -181,7 +184,7 @@ export default function NoteGroup({
                     
                     {/* Show "+" for additional notes */}
                     {notes.length > 3 && (
-                      <div className={`rounded-lg border text-xs p-1 flex items-center justify-center ${
+                      <div className={`rounded-xl border-2 text-xs p-2 flex items-center justify-center font-semibold ${
                         isDark 
                           ? 'bg-gray-700 border-gray-600 text-gray-300' 
                           : 'bg-gray-100 border-gray-200 text-gray-600'
@@ -213,18 +216,18 @@ export default function NoteGroup({
               </Droppable>
             </div>
 
-            {/* Summary Text */}
-            <div className="px-3 pb-2">
-              <p className={`text-xs text-center ${
-                isDark ? 'text-gray-400' : 'text-gray-600'
+            {/* Summary Text - Enhanced */}
+            <div className="px-4 pb-3">
+              <p className={`text-sm text-center font-medium ${
+                isDark ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 {getSummaryText()}
               </p>
               
-              <p className={`text-xs text-center mt-1 opacity-70 ${
-                isDark ? 'text-gray-500' : 'text-gray-500'
+              <p className={`text-xs text-center mt-2 opacity-80 ${
+                isDark ? 'text-gray-400' : 'text-gray-500'
               }`}>
-                📱 Drag preview to move • Click to expand
+                📱 Drag to move • Click to expand
               </p>
             </div>
           </div>
@@ -235,214 +238,166 @@ export default function NoteGroup({
 
   // Full detailed view (when expanded or not in workspace)
   return (
-    <div ref={groupRef} className={`rounded-2xl shadow-lg border-2 transition-all duration-200 ${
+    <div ref={groupRef} className={`rounded-3xl shadow-xl border-2 transition-all duration-300 ${
       isDark 
-        ? 'border-gray-600 bg-gray-800' 
-        : 'border-gray-300 bg-white'
+        ? 'border-gray-600 bg-gradient-to-br from-gray-800 to-gray-900' 
+        : 'border-gray-300 bg-gradient-to-br from-white to-gray-50'
     }`}>
-      {/* Header - Reorganized and improved */}
+      {/* Header - Modernized and enhanced */}
       <div 
-        className={`p-4 border-b rounded-t-2xl ${
-          isDark ? 'border-gray-600' : 'border-gray-200'
+        className={`p-4 border-b rounded-t-3xl transition-all duration-300 ${
+          isDark ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-gray-50/50'
         }`}
-        style={{ 
-          background: `linear-gradient(135deg, ${group.color}10, ${group.color}05)`,
-          borderLeft: `4px solid ${group.color}`
+        style={{
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          borderLeft: `8px solid ${group.color}`
         }}
       >
-        {/* Title Section */}
-        <div className="flex items-center justify-between mb-4">
-          {isEditing ? (
-            <div className="flex items-center space-x-3 flex-1">
-              <input
-                type="text"
-                value={editingName}
-                onChange={(e) => setEditingName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleNameSave()}
-                className={`flex-1 px-3 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  isDark 
-                    ? 'bg-gray-700 border-gray-600 text-white' 
-                    : 'bg-white border-gray-300 text-gray-900'
-                }`}
-                autoFocus
-              />
-              <button
-                onClick={handleNameSave}
-                className="px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors"
-              >
-                ✓ Save
-              </button>
-              <button
-                onClick={() => {
-                  setIsEditing(false);
-                  setEditingName(group.name);
-                }}
-                className="px-3 py-2 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
-              >
-                ✗ Cancel
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-3">
-              <h3 className={`font-bold text-xl ${
-                isDark ? 'text-white' : 'text-gray-900'
-              }`}>
-                📁 {group.name}
-              </h3>
-              <span 
-                className={`text-sm px-3 py-1 rounded-full font-medium`}
-                style={{ 
-                  backgroundColor: group.color + '20',
-                  color: isDark ? '#fff' : '#000'
-                }}
-              >
-                {notes.length} {notes.length === 1 ? 'note' : 'notes'}
-              </span>
-            </div>
-          )}
-
-          {/* Auto-collapse info for workspace view */}
-          {isWorkspaceView && (
-            <div className={`text-xs px-3 py-1 rounded-full ${
-              isDark 
-                ? 'bg-gray-700 text-gray-400' 
-                : 'bg-gray-100 text-gray-600'
-            }`}>
-              📱 Click outside to compact
-            </div>
-          )}
-        </div>
-
-        {/* Controls Section - Reorganized */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            {/* Edit Name Button */}
-            {!isEditing && (
-              <button
-                onClick={() => setIsEditing(true)}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
-                  isDark 
-                    ? 'text-gray-400 hover:bg-gray-700 hover:text-white' 
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                }`}
-              >
-                <span>✏️</span>
-                <span className="text-sm">Rename</span>
-              </button>
-            )}
+          <div className="flex items-center space-x-4">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold shadow-inner ${isDark ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'}`} style={{color: group.color}}>
+              {notes.length}
+            </div>
+            <div>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={editingName}
+                  onChange={(e) => setEditingName(e.target.value)}
+                  onBlur={handleNameSave}
+                  onKeyDown={(e) => e.key === 'Enter' && handleNameSave()}
+                  className={`text-xl font-bold p-1 rounded-md transition-all duration-200 ${
+                    isDark ? 'bg-gray-700 text-white focus:ring-2 focus:ring-blue-500' : 'bg-white text-gray-900 focus:ring-2 focus:ring-blue-500'
+                  }`}
+                  autoFocus
+                />
+              ) : (
+                <h2 
+                  className={`text-xl font-bold cursor-pointer ${isDark ? 'text-white' : 'text-gray-900'}`}
+                  onClick={() => setIsEditing(true)}
+                >
+                  {group.name}
+                </h2>
+              )}
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                {getSummaryText()}
+              </p>
+            </div>
+          </div>
 
-            {/* Color Picker Dropdown */}
+          <div className="flex items-center space-x-2">
+            {/* Color Picker */}
             <div className="relative" ref={colorDropdownRef}>
               <button
                 onClick={() => setShowColorDropdown(!showColorDropdown)}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
-                  isDark 
-                    ? 'text-gray-400 hover:bg-gray-700 hover:text-white' 
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                }`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}
               >
-                <div 
-                  className="w-4 h-4 rounded-full border-2 border-current"
-                  style={{ backgroundColor: group.color }}
-                />
-                <span className="text-sm">Color</span>
-                <span className={`transition-transform ${showColorDropdown ? 'rotate-180' : ''}`}>
-                  ▼
-                </span>
+                <div className="w-6 h-6 rounded-full" style={{ backgroundColor: group.color }} />
               </button>
-
-              {/* Color Dropdown */}
               {showColorDropdown && (
-                <div className={`absolute top-full left-0 mt-2 p-3 rounded-lg shadow-lg border-2 z-10 ${
-                  isDark 
-                    ? 'bg-gray-800 border-gray-600' 
-                    : 'bg-white border-gray-200'
-                }`}>
+                <div className={`absolute top-12 right-0 p-2 rounded-xl shadow-2xl z-20 ${isDark ? 'bg-gray-900 border border-gray-700' : 'bg-white border border-gray-200'}`}>
                   <div className="grid grid-cols-4 gap-2">
-                    {colors.map(color => (
+                    {colors.map((color) => (
                       <button
                         key={color}
                         onClick={() => handleColorChange(color)}
-                        className={`w-8 h-8 rounded-full border-2 transition-all hover:scale-110 ${
-                          group.color === color 
-                            ? 'border-gray-900 dark:border-white scale-110' 
-                            : 'border-gray-400'
-                        }`}
+                        className="w-8 h-8 rounded-full transition-all duration-200 transform hover:scale-125"
                         style={{ backgroundColor: color }}
-                        title={`Select ${color}`}
                       />
                     ))}
                   </div>
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Delete Button */}
-          <button
-            onClick={() => onDeleteGroup(group.id)}
-            className="flex items-center space-x-2 px-3 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
-          >
-            <span>🗑️</span>
-            <span>Delete Group</span>
-          </button>
+            {/* Delete Button */}
+            <button
+              onClick={() => onDeleteGroup(group.id)}
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 text-red-500 hover:bg-red-500 hover:text-white hover:scale-110"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+            
+            {/* Collapse Button */}
+            <button
+              onClick={toggleExpanded}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${isDark ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-200'}`}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Notes Content */}
+      {/* Body: List of notes */}
       <div className="p-4">
-        {notes.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="text-4xl mb-2">📂</div>
-            <p className={`${
-              isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>
-              Empty group - drag notes here
-            </p>
-          </div>
-        ) : (
-          <Droppable droppableId={`group-${group.id}`}>
-            {(provided, snapshot) => (
-              <div
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                className={`space-y-4 transition-all duration-200 ${
-                  snapshot.isDraggingOver 
-                    ? isDark 
-                      ? 'bg-gray-700 rounded-lg p-2' 
-                      : 'bg-blue-50 rounded-lg p-2'
-                    : ''
-                }`}
-              >
-                {notes.map((note, index) => (
-                  <Draggable key={note.id} draggableId={note.id} index={index}>
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        className={`transition-all duration-200 ${
-                          snapshot.isDragging ? 'transform rotate-1 scale-105 z-50' : ''
-                        }`}
-                      >
-                        <NoteCard
-                          note={note}
-                          isDark={isDark}
-                          isDragging={snapshot.isDragging}
-                          onUpdate={onUpdateNote}
-                          onDelete={onDeleteNote}
-                          isInGroup={true}
-                        />
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        )}
+        <Droppable droppableId={`group-${group.id}`} type="NOTE">
+          {(provided, snapshot) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className={`space-y-3 transition-all duration-300 rounded-2xl p-2 ${
+                snapshot.isDraggingOver 
+                  ? isDark ? 'bg-blue-900/40' : 'bg-blue-100'
+                  : ''
+              }`}
+            >
+              {notes.map((note, index) => (
+                <Draggable key={note.id} draggableId={note.id} index={index}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                      className={`transition-all duration-300 ${
+                        snapshot.isDragging ? 'transform rotate-2 scale-105 z-50 shadow-2xl' : 'hover:scale-102'
+                      }`}
+                    >
+                      <NoteCard
+                        note={note}
+                        isDark={isDark}
+                        isDragging={snapshot.isDragging}
+                        onUpdate={onUpdateNote}
+                        onDelete={onDeleteNote}
+                        isInGroup={true}
+                      />
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </div>
+
+      {/* Footer dropzone */}
+      <div className="p-4 border-t border-dashed rounded-b-3xl" style={{borderColor: isDark ? '#4A5568' : '#CBD5E0'}}>
+        <Droppable droppableId={`group-footer-${group.id}`} type="NOTE">
+          {(provided, snapshot) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className={`w-full text-center py-4 rounded-xl transition-all duration-300 ${
+                snapshot.isDraggingOver
+                  ? isDark ? 'bg-green-900/50' : 'bg-green-100'
+                  : isDark ? 'bg-gray-800/50' : 'bg-gray-100'
+              }`}
+            >
+              <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                + Drag other notes here to add
+              </p>
+            </div>
+          )}
+        </Droppable>
       </div>
     </div>
   );
-} 
+}
+
+export default memo(NoteGroup); 
