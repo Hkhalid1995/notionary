@@ -19,7 +19,7 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const { name, description, color } = await request.json();
+    const { name, description, color, icon, isDefault } = await request.json();
 
     // Check if workspace exists and belongs to user
     const existingWorkspace = await prisma.workspace.findFirst({
@@ -36,12 +36,27 @@ export async function PUT(
       );
     }
 
+    // If setting this workspace as default, unset all other workspaces as default first
+    if (isDefault) {
+      await prisma.workspace.updateMany({
+        where: {
+          userId: session.user.id,
+          isDefault: true,
+        },
+        data: {
+          isDefault: false,
+        },
+      });
+    }
+
     const updatedWorkspace = await prisma.workspace.update({
       where: { id },
       data: {
         name,
         description,
         color,
+        icon,
+        isDefault,
       },
     });
 

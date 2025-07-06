@@ -81,17 +81,26 @@ export default function ClientPage() {
 
     const loadData = async () => {
       try {
+        console.log('Loading data...');
         // Load workspaces first
         const workspacesResponse = await fetch('/api/workspaces');
         if (workspacesResponse.ok) {
           const workspacesData = await workspacesResponse.json();
+          console.log('Loaded workspaces:', workspacesData);
           setWorkspaces(workspacesData);
           
           // Set current workspace
           const defaultWorkspace = workspacesData.find((w: Workspace) => w.isDefault);
           const targetWorkspaceId = defaultWorkspace ? defaultWorkspace.id : (workspacesData.length > 0 ? workspacesData[0].id : '');
           
+          console.log('Workspace selection:', {
+            defaultWorkspace,
+            targetWorkspaceId,
+            totalWorkspaces: workspacesData.length
+          });
+          
           if (targetWorkspaceId) {
+            console.log('Setting current workspace to:', targetWorkspaceId);
             setCurrentWorkspaceId(targetWorkspaceId);
             
             // Load groups for the target workspace
@@ -115,6 +124,28 @@ export default function ClientPage() {
                 ...n,
                 todos: []
               })));
+            }
+          } else {
+            console.error('No workspace found! Creating default workspace...');
+            // Create a default workspace if none exists
+            const defaultWorkspaceResponse = await fetch('/api/workspaces', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                name: 'Personal',
+                color: '#4F46E5',
+                description: 'My personal workspace',
+                isDefault: true,
+              }),
+            });
+            
+            if (defaultWorkspaceResponse.ok) {
+              const newWorkspace = await defaultWorkspaceResponse.json();
+              console.log('Created default workspace:', newWorkspace);
+              setWorkspaces(prev => [...prev, newWorkspace]);
+              setCurrentWorkspaceId(newWorkspace.id);
             }
           }
         }
@@ -291,6 +322,8 @@ export default function ClientPage() {
 
   const createNote = useCallback(async (noteData: Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'workspaceId'>) => {
     try {
+      console.log('Creating note with workspaceId:', currentWorkspaceId, 'noteData:', noteData);
+      
       const response = await fetch('/api/notes', {
         method: 'POST',
         headers: {
@@ -304,8 +337,17 @@ export default function ClientPage() {
 
       if (response.ok) {
         const newNote = await response.json();
-        setNotes(prev => [...prev, { ...newNote, todos: [] }]);
+        console.log('Successfully created note:', newNote);
+        setNotes(prev => {
+          const updatedNotes = [...prev, { ...newNote, todos: [] }];
+          console.log('Updated notes state:', updatedNotes);
+          return updatedNotes;
+        });
         return newNote.id;
+      } else {
+        console.error('Failed to create note:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
       }
     } catch (error) {
       console.error('Error creating note:', error);
@@ -869,9 +911,18 @@ export default function ClientPage() {
   }, [notes, groups, createGroup, deleteGroup, updateGroupNoteIds]);
 
   const getAllWorkspaceItems = useCallback(() => {
+    console.log('getAllWorkspaceItems called with:', {
+      currentWorkspaceId,
+      totalNotes: notes.length,
+      totalGroups: groups.length,
+      notes: notes.map(n => ({ id: n.id, title: n.title, workspaceId: n.workspaceId, groupId: n.groupId }))
+    });
+    
     const workspaceNotes = notes.filter(note => 
       note.workspaceId === currentWorkspaceId || (!note.workspaceId && currentWorkspaceId === workspaces.find(w => w.isDefault)?.id)
     );
+    
+    console.log('Filtered workspace notes:', workspaceNotes.map(n => ({ id: n.id, title: n.title, workspaceId: n.workspaceId })));
     
     const workspaceGroups = groups.filter(group => 
       group.workspaceId === currentWorkspaceId || (!group.workspaceId && currentWorkspaceId === workspaces.find(w => w.isDefault)?.id)
@@ -1061,7 +1112,7 @@ export default function ClientPage() {
                 {/* Workspace Dropdown */}
                 <div className="absolute top-full left-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <div className="p-4">
-                    {/* Create New Workspace Button */}
+                    {/* Create / Edit Workspace Button */}
                     <button
                       onClick={() => setShowWorkspaceModal(true)}
                       className="w-full mb-4 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 font-medium flex items-center justify-center space-x-2"
@@ -1069,7 +1120,7 @@ export default function ClientPage() {
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
-                      <span>Create New Workspace</span>
+                      <span>Create / Edit Workspace</span>
                     </button>
 
                     {/* Workspace List */}
@@ -1328,6 +1379,15 @@ function WorkspaceModal({
   const [newWorkspaceIcon, setNewWorkspaceIcon] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  
+  // Edit mode state
+  const [editingWorkspace, setEditingWorkspace] = useState<Workspace | null>(null);
+  const [editWorkspaceName, setEditWorkspaceName] = useState('');
+  const [editWorkspaceColor, setEditWorkspaceColor] = useState('');
+  const [editWorkspaceDescription, setEditWorkspaceDescription] = useState('');
+  const [editWorkspaceIcon, setEditWorkspaceIcon] = useState('');
+  const [showEditEmojiPicker, setShowEditEmojiPicker] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Modern color palette for light and dark modes
   const lightModeColors = [
@@ -1370,14 +1430,61 @@ function WorkspaceModal({
     }
   }, [newWorkspaceName, newWorkspaceColor, newWorkspaceDescription, newWorkspaceIcon, onCreate, onClose, currentColors]);
 
+  const handleEdit = useCallback((workspace: Workspace) => {
+    setEditingWorkspace(workspace);
+    setEditWorkspaceName(workspace.name);
+    setEditWorkspaceColor(workspace.color);
+    setEditWorkspaceDescription(workspace.description || '');
+    setEditWorkspaceIcon(workspace.icon || '');
+  }, []);
+
+  const handleUpdate = useCallback(async () => {
+    if (editingWorkspace && editWorkspaceName.trim()) {
+      setIsUpdating(true);
+      try {
+        onUpdate(editingWorkspace.id, {
+          name: editWorkspaceName.trim(),
+          color: editWorkspaceColor,
+          description: editWorkspaceDescription.trim(),
+          icon: editWorkspaceIcon,
+        });
+        setEditingWorkspace(null);
+        setEditWorkspaceName('');
+        setEditWorkspaceColor('');
+        setEditWorkspaceDescription('');
+        setEditWorkspaceIcon('');
+      } catch (error) {
+        console.error('Error updating workspace:', error);
+      } finally {
+        setIsUpdating(false);
+      }
+    }
+  }, [editingWorkspace, editWorkspaceName, editWorkspaceColor, editWorkspaceDescription, editWorkspaceIcon, onUpdate]);
+
+  const handleSetDefault = useCallback(async (workspaceId: string) => {
+    try {
+      onUpdate(workspaceId, { isDefault: true });
+    } catch (error) {
+      console.error('Error setting default workspace:', error);
+    }
+  }, [onUpdate]);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingWorkspace(null);
+    setEditWorkspaceName('');
+    setEditWorkspaceColor('');
+    setEditWorkspaceDescription('');
+    setEditWorkspaceIcon('');
+  }, []);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="relative w-full max-w-md mx-4">
+      <div className="relative w-full max-w-4xl mx-4">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 text-white">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold">Create New Workspace</h2>
+              <h2 className="text-xl font-bold">Workspace Management</h2>
               <button
                 onClick={onClose}
                 className="text-white/80 hover:text-white transition-colors"
@@ -1390,7 +1497,11 @@ function WorkspaceModal({
           </div>
 
           {/* Content */}
-          <div className="p-6 space-y-6">
+          <div className="p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Create New Workspace */}
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Create New Workspace</h3>
             {/* Workspace Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1486,20 +1597,12 @@ function WorkspaceModal({
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
               />
             </div>
-          </div>
 
-          {/* Footer */}
-          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 flex space-x-3">
-            <button
-              onClick={onClose}
-              className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
-            >
-              Cancel
-            </button>
+            {/* Create Button */}
             <button
               onClick={handleCreate}
               disabled={!newWorkspaceName.trim() || isCreating}
-              className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium"
+              className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium"
             >
               {isCreating ? (
                 <div className="flex items-center justify-center space-x-2">
@@ -1510,6 +1613,258 @@ function WorkspaceModal({
                 'Create Workspace'
               )}
             </button>
+              </div>
+
+              {/* Manage Existing Workspaces */}
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Manage Workspaces</h3>
+                
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {workspaces.map((workspace) => (
+                    <div
+                      key={workspace.id}
+                      className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                        currentWorkspaceId === workspace.id
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                          : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          {workspace.icon && (
+                            <span className="text-2xl">{workspace.icon}</span>
+                          )}
+                          <div
+                            className="w-4 h-4 rounded-full"
+                            style={{ backgroundColor: workspace.color }}
+                          />
+                          <div>
+                            <h4 className="font-semibold text-gray-900 dark:text-white">
+                              {workspace.name}
+                              {workspace.isDefault && (
+                                <span className="ml-2 text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full">
+                                  Default
+                                </span>
+                              )}
+                            </h4>
+                            {workspace.description && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {workspace.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          {!workspace.isDefault && (
+                            <button
+                              onClick={() => handleSetDefault(workspace.id)}
+                              className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                            >
+                              Set Default
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleEdit(workspace)}
+                            className="text-xs bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
+                          >
+                            Edit
+                          </button>
+                          {!workspace.isDefault && workspaces.length > 1 && (
+                            <button
+                              onClick={() => onDelete(workspace.id)}
+                              className="text-xs bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={() => onSwitch(workspace.id)}
+                        className={`w-full text-sm px-3 py-2 rounded-lg transition-colors ${
+                          currentWorkspaceId === workspace.id
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500'
+                        }`}
+                      >
+                        {currentWorkspaceId === workspace.id ? 'Current Workspace' : 'Switch to This Workspace'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Edit Workspace Modal */}
+            {editingWorkspace && (
+              <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                <div className="relative w-full max-w-md mx-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-green-500 to-blue-600 p-6 text-white">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-xl font-bold">Edit Workspace</h2>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="text-white/80 hover:text-white transition-colors"
+                        >
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-6 space-y-6">
+                      {/* Workspace Name */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Workspace Name *
+                        </label>
+                        <input
+                          type="text"
+                          value={editWorkspaceName}
+                          onChange={(e) => setEditWorkspaceName(e.target.value)}
+                          placeholder="Enter workspace name"
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        />
+                      </div>
+
+                      {/* Icon Selection */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Workspace Icon
+                        </label>
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setShowEditEmojiPicker(!showEditEmojiPicker)}
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white flex items-center justify-between hover:border-blue-500 transition-all duration-200"
+                          >
+                            <span className="flex items-center space-x-3">
+                              {editWorkspaceIcon ? (
+                                <span className="text-2xl">{editWorkspaceIcon}</span>
+                              ) : (
+                                <span className="text-gray-400">🎯</span>
+                              )}
+                              <span className={editWorkspaceIcon ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}>
+                                {editWorkspaceIcon ? 'Selected' : 'Choose an icon'}
+                              </span>
+                            </span>
+                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          
+                          {showEditEmojiPicker && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg z-10 p-4">
+                              <div className="grid grid-cols-8 gap-2">
+                                {commonEmojis.map((emoji) => (
+                                  <button
+                                    key={emoji}
+                                    onClick={() => {
+                                      setEditWorkspaceIcon(emoji);
+                                      setShowEditEmojiPicker(false);
+                                    }}
+                                    className="w-8 h-8 text-xl hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors flex items-center justify-center"
+                                  >
+                                    {emoji}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Color Selection */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Workspace Color
+                        </label>
+                        <div className="grid grid-cols-6 gap-3">
+                          {currentColors.map((color) => (
+                            <button
+                              key={color}
+                              onClick={() => setEditWorkspaceColor(color)}
+                              className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${
+                                editWorkspaceColor === color
+                                  ? 'border-gray-900 dark:border-white scale-110 shadow-lg'
+                                  : 'border-gray-300 dark:border-gray-600 hover:scale-105'
+                              }`}
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Description */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Description (Optional)
+                        </label>
+                        <textarea
+                          value={editWorkspaceDescription}
+                          onChange={(e) => setEditWorkspaceDescription(e.target.value)}
+                          placeholder="Describe your workspace..."
+                          rows={3}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                        />
+                      </div>
+
+                      {/* Set as Default */}
+                      {!editingWorkspace.isDefault && (
+                        <div className="flex items-center space-x-3">
+                          <button
+                            onClick={() => handleSetDefault(editingWorkspace.id)}
+                            className="flex-1 px-4 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-all duration-200 font-medium"
+                          >
+                            Set as Default Workspace
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 flex space-x-3">
+                      <button
+                        onClick={handleCancelEdit}
+                        className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleUpdate}
+                        disabled={!editWorkspaceName.trim() || isUpdating}
+                        className="flex-1 px-4 py-2 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-xl hover:from-green-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium"
+                      >
+                        {isUpdating ? (
+                          <div className="flex items-center justify-center space-x-2">
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <span>Updating...</span>
+                          </div>
+                        ) : (
+                          'Update Workspace'
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Footer */}
+            <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 flex justify-end">
+              <button
+                onClick={onClose}
+                className="px-6 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       </div>
