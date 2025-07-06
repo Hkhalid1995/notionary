@@ -81,7 +81,7 @@ export default function ClientPage() {
 
     const loadData = async () => {
       try {
-        // Load workspaces
+        // Load workspaces first
         const workspacesResponse = await fetch('/api/workspaces');
         if (workspacesResponse.ok) {
           const workspacesData = await workspacesResponse.json();
@@ -89,32 +89,34 @@ export default function ClientPage() {
           
           // Set current workspace
           const defaultWorkspace = workspacesData.find((w: Workspace) => w.isDefault);
-          if (defaultWorkspace) {
-            setCurrentWorkspaceId(defaultWorkspace.id);
-          } else if (workspacesData.length > 0) {
-            setCurrentWorkspaceId(workspacesData[0].id);
+          const targetWorkspaceId = defaultWorkspace ? defaultWorkspace.id : (workspacesData.length > 0 ? workspacesData[0].id : '');
+          
+          if (targetWorkspaceId) {
+            setCurrentWorkspaceId(targetWorkspaceId);
+            
+            // Load groups for the target workspace
+            const groupsResponse = await fetch(`/api/groups?workspaceId=${targetWorkspaceId}`);
+            if (groupsResponse.ok) {
+              const groupsData = await groupsResponse.json();
+              console.log('Loaded groups for workspace:', targetWorkspaceId, groupsData);
+              setGroups(groupsData.map((g: any) => ({
+                ...g,
+                noteIds: [],
+                isExpanded: true
+              })));
+            }
+
+            // Load notes for the target workspace
+            const notesResponse = await fetch(`/api/notes?workspaceId=${targetWorkspaceId}`);
+            if (notesResponse.ok) {
+              const notesData = await notesResponse.json();
+              console.log('Loaded notes for workspace:', targetWorkspaceId, notesData);
+              setNotes(notesData.map((n: any) => ({
+                ...n,
+                todos: []
+              })));
+            }
           }
-        }
-
-        // Load groups
-        const groupsResponse = await fetch('/api/groups');
-        if (groupsResponse.ok) {
-          const groupsData = await groupsResponse.json();
-          setGroups(groupsData.map((g: any) => ({
-            ...g,
-            noteIds: [],
-            isExpanded: true
-          })));
-        }
-
-        // Load notes
-        const notesResponse = await fetch('/api/notes');
-        if (notesResponse.ok) {
-          const notesData = await notesResponse.json();
-          setNotes(notesData.map((n: any) => ({
-            ...n,
-            todos: []
-          })));
         }
         
         setIsLoading(false);
@@ -126,6 +128,40 @@ export default function ClientPage() {
 
     loadData();
   }, [session, status, router]);
+
+  // Reload data when workspace changes
+  useEffect(() => {
+    if (currentWorkspaceId && session) {
+      const reloadWorkspaceData = async () => {
+        try {
+          // Load groups for current workspace
+          const groupsResponse = await fetch(`/api/groups?workspaceId=${currentWorkspaceId}`);
+          if (groupsResponse.ok) {
+            const groupsData = await groupsResponse.json();
+            setGroups(groupsData.map((g: any) => ({
+              ...g,
+              noteIds: [],
+              isExpanded: true
+            })));
+          }
+
+          // Load notes for current workspace
+          const notesResponse = await fetch(`/api/notes?workspaceId=${currentWorkspaceId}`);
+          if (notesResponse.ok) {
+            const notesData = await notesResponse.json();
+            setNotes(notesData.map((n: any) => ({
+              ...n,
+              todos: []
+            })));
+          }
+        } catch (error) {
+          console.error('Error reloading workspace data:', error);
+        }
+      };
+
+      reloadWorkspaceData();
+    }
+  }, [currentWorkspaceId, session]);
 
   // Initialize theme on mount
   useEffect(() => {
@@ -394,12 +430,22 @@ export default function ClientPage() {
     try {
       console.log('Updating group:', groupId, 'with updates:', updates);
       
+      // Get the current group to preserve its workspaceId
+      const currentGroup = groups.find(g => g.id === groupId);
+      if (!currentGroup) {
+        console.error('Group not found for update:', groupId);
+        return;
+      }
+      
       const response = await fetch(`/api/groups/${groupId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updates),
+        body: JSON.stringify({
+          ...updates,
+          workspaceId: currentGroup.workspaceId || currentWorkspaceId, // Preserve workspaceId
+        }),
       });
 
       if (response.ok) {
@@ -411,14 +457,13 @@ export default function ClientPage() {
           if (group.id === groupId) {
             return {
               ...updatedGroup,
+              workspaceId: currentGroup.workspaceId || currentWorkspaceId, // Ensure workspaceId is preserved
               noteIds: group.noteIds || [], // Preserve local noteIds
               isExpanded: group.isExpanded // Preserve local isExpanded state
             };
           }
           return group;
         }));
-        
-        console.log('Updated local groups state');
       } else {
         console.error('Failed to update group:', response.status, response.statusText);
         const errorText = await response.text();
@@ -427,7 +472,7 @@ export default function ClientPage() {
     } catch (error) {
       console.error('Error updating group:', error);
     }
-  }, []);
+  }, [groups, currentWorkspaceId]);
 
   const deleteGroup = useCallback(async (groupId: string) => {
     try {
@@ -783,7 +828,10 @@ export default function ClientPage() {
         }
       }
 
-      // Add note to the target group by updating the note's groupId
+      // Add note to the target group by updating the note's groupId and workspaceId
+      const targetGroup = groups.find(g => g.id === targetGroupId);
+      console.log('Adding note to group:', { draggableId, targetGroupId, targetGroupWorkspaceId: targetGroup?.workspaceId });
+      
       const addToGroupResponse = await fetch(`/api/notes/${draggableId}`, {
         method: 'PUT',
         headers: {
@@ -791,14 +839,17 @@ export default function ClientPage() {
         },
         body: JSON.stringify({
           groupId: targetGroupId,
+          workspaceId: targetGroup?.workspaceId, // Update workspaceId to match the group's workspace
         }),
       });
       
       if (addToGroupResponse.ok) {
+        console.log('Successfully added note to group in database');
+        
         // Update local state
         setNotes(prev => prev.map(note => 
           note.id === draggableId
-            ? { ...note, groupId: targetGroupId }
+            ? { ...note, groupId: targetGroupId, workspaceId: targetGroup?.workspaceId }
             : note
         ));
         
@@ -806,8 +857,11 @@ export default function ClientPage() {
         const targetGroup = groups.find(g => g.id === targetGroupId);
         if (targetGroup) {
           const newNoteIds = [...(targetGroup.noteIds || []), draggableId];
+          console.log('Updating group noteIds:', { targetGroupId, currentNoteIds: targetGroup.noteIds, newNoteIds });
           updateGroupNoteIds(targetGroupId, newNoteIds);
         }
+      } else {
+        console.error('Failed to add note to group:', addToGroupResponse.status, addToGroupResponse.statusText);
       }
       
       return;
@@ -825,25 +879,33 @@ export default function ClientPage() {
 
     const ungroupedNotes = workspaceNotes.filter(note => !note.groupId);
     
-    // Use actual note.groupId to determine which notes belong to which groups
-    // This ensures we're in sync with the database state
+    // Use the group's noteIds from local state, but fall back to calculated noteIds if needed
     const groupedNotes = workspaceGroups
       .map(group => {
         const groupNotes = workspaceNotes.filter(note => note.groupId === group.id);
+        
+        // Use the group's noteIds from local state, but ensure they match the actual notes
+        const localNoteIds = group.noteIds || [];
+        const actualNoteIds = groupNotes.map(note => note.id);
+        
+        // Merge local noteIds with actual noteIds to handle any discrepancies
+        const mergedNoteIds = [...new Set([...localNoteIds, ...actualNoteIds])];
+        
+        console.log(`Group ${group.name} (${group.id}):`, {
+          groupWorkspaceId: group.workspaceId,
+          currentWorkspaceId,
+          notesInGroup: groupNotes.length,
+          localNoteIds,
+          actualNoteIds,
+          mergedNoteIds: mergedNoteIds.map(n => ({ id: n, title: workspaceNotes.find(note => note.id === n)?.title, workspaceId: workspaceNotes.find(note => note.id === n)?.workspaceId }))
+        });
+        
         return {
           ...group,
           notes: groupNotes,
-          noteIds: groupNotes.map(note => note.id) // Update noteIds to match actual state
+          noteIds: mergedNoteIds // Use merged noteIds to preserve local state
         };
-      })
-      .filter(group => group.notes.length > 0); // Only include groups that have notes
-
-    // Debug logging
-    console.log('Workspace notes:', workspaceNotes.length);
-    console.log('Workspace groups:', workspaceGroups.length);
-    console.log('Ungrouped notes:', ungroupedNotes.length);
-    console.log('Grouped notes:', groupedNotes.length);
-    console.log('Groups with notes:', groupedNotes.map(g => ({ id: g.id, noteCount: g.notes.length, noteIds: g.noteIds })));
+      });
 
     return { ungroupedNotes, groupedNotes };
   }, [notes, groups, workspaces, currentWorkspaceId]);
@@ -893,16 +955,21 @@ export default function ClientPage() {
     // Calculate total notes (ungrouped + grouped)
     const totalNotesInGroups = groupedNotes.reduce((sum, group) => sum + group.notes.length, 0);
     const totalAllNotes = totalIndividualNotes + totalNotesInGroups;
+    const groupsWithNotes = groupedNotes.filter(g => g.notes.length > 0).length;
+    const emptyGroups = groupedNotes.filter(g => g.notes.length === 0).length;
     
-    if (totalAllNotes === 0) return 'No notes yet';
-    if (totalAllNotes === 1) return '1 note';
+    if (totalAllNotes === 0 && emptyGroups === 0) return 'No notes yet';
+    if (totalAllNotes === 1 && emptyGroups === 0) return '1 note';
     
     const parts = [];
     if (totalAllNotes > 0) {
       parts.push(`${totalAllNotes} note${totalAllNotes === 1 ? '' : 's'}`);
     }
-    if (totalGroups > 0) {
-      parts.push(`${totalGroups} group${totalGroups === 1 ? '' : 's'}`);
+    if (groupsWithNotes > 0) {
+      parts.push(`${groupsWithNotes} group${groupsWithNotes === 1 ? '' : 's'}`);
+    }
+    if (emptyGroups > 0) {
+      parts.push(`${emptyGroups} empty group${emptyGroups === 1 ? '' : 's'}`);
     }
     
     return parts.join(' • ');
@@ -914,6 +981,15 @@ export default function ClientPage() {
     
     // Mark positions occupied by groups
     groupedNotes.forEach((group) => {
+      if (group.notes.length === 0) {
+        // For empty groups, use a default position based on group index
+        const groupIndex = groupedNotes.indexOf(group);
+        const col = groupIndex % 4;
+        const row = Math.floor(groupIndex / 4);
+        occupiedPositions.add(`${col}-${row}`);
+        return;
+      }
+      
       const firstNote = group.notes[0];
       if (!firstNote || !notes) return;
       

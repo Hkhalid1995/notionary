@@ -1,5 +1,4 @@
 import NextAuth, { AuthOptions } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "../../../../lib/prisma";
@@ -20,10 +19,6 @@ declare module "next-auth" {
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -64,41 +59,20 @@ export const authOptions: AuthOptions = {
     })
   ],
   session: {
-    strategy: "database" as const,
+    strategy: "jwt" as const,
   },
   callbacks: {
-    async session({ session, user }: any) {
-      if (user && session.user) {
-        session.user.id = user.id;
+    async session({ session, token }: any) {
+      if (token && session.user) {
+        session.user.id = token.sub;
       }
       return session;
     },
-    async signIn({ user, account, profile }: any) {
-      if (account?.provider === "google") {
-        try {
-          // Ensure user exists in database
-          const existingUser = await prisma.user.findUnique({
-            where: { email: user.email! },
-            include: { workspaces: true }
-          });
-
-          if (existingUser && existingUser.workspaces.length === 0) {
-            // Create default workspace for new Google users
-            await prisma.workspace.create({
-              data: {
-                name: "My Workspace",
-                description: "Default workspace",
-                color: "#4F46E5",
-                isDefault: true,
-                userId: existingUser.id
-              }
-            });
-          }
-        } catch (error) {
-          console.error("Error in signIn callback:", error);
-        }
+    async jwt({ token, user }: any) {
+      if (user) {
+        token.sub = user.id;
       }
-      return true;
+      return token;
     }
   },
   pages: {
